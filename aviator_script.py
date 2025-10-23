@@ -445,7 +445,6 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
        
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--start-maximized")
-        chrome_options.add_argument("--headless") 
         chrome_options.add_argument("--disable-infobars")
         chrome_options.add_argument("--enable-unsafe-swiftshader")
         chrome_options.add_argument("--disable-extensions")
