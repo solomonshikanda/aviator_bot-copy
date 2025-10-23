@@ -20,15 +20,9 @@ import time
 import threading
 import numpy as np
 import pandas as pd
-from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import LSTM, Dense, Dropout, BatchNormalization
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import class_weight
 from sklearn.metrics import classification_report
-from tensorflow.keras.layers import GRU, Dense, Dropout, BatchNormalization
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import class_weight
 from sklearn.metrics import classification_report
