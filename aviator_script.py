@@ -406,41 +406,15 @@ def get_recent_payouts(driver):
 
 from selenium.common.exceptions import UnexpectedAlertPresentException
 
-def safe_switch_to_iframe(driver):
+def switch_to_game_iframe(driver):
     try:
         driver.switch_to.default_content()
-
-        # Dismiss any alert if present
-        try:
-            alert = driver.switch_to.alert
-            alert_text = alert.text
-            alert.dismiss()  # or alert.accept() if needed
-            add_log(f"⚠️ Dismissed unexpected alert: {alert_text}")
-        except Exception:
-            pass  # no alert present
-
-        # Wait for the iframe
-        iframe = WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((By.TAG_NAME, "iframe"))
-        )
-        driver.switch_to.frame(iframe)
-        add_log("✅ Switched to iframe successfully")
-        return True
-
-    except UnexpectedAlertPresentException as e:
-        add_log(f"⚠️ Caught UnexpectedAlertPresentException: {e}")
-        try:
-            alert = driver.switch_to.alert
-            alert.dismiss()
-            add_log("⚠️ Alert dismissed, retrying iframe switch")
-            return safe_switch_to_iframe(driver)  # retry
-        except Exception as inner:
-            add_log(f"❌ Failed to dismiss alert: {inner}")
-            return False
-
-    except Exception as e:
-        add_log(f"❌ Iframe switch failed: {e}")
-        return False
+        iframe = WebDriverWait(driver, 15).until(lambda d: d.find_elements(By.TAG_NAME, "iframe"))
+        if iframe:
+            driver.switch_to.frame(iframe[0])
+            print("Switched to game iframe.")
+    except Exception:
+        add_log(f"Iframe switch error:")
    
 # ---------------------- CORE BOT LOGIC ----------------------
 def run_bot(bet_amount, phone, password, check_interval, check_duration):
@@ -507,7 +481,7 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
         time.sleep(5)
         driver.get(AVIATOR_URL)
         time.sleep(4)
-        safe_switch_to_iframe(driver)
+        switch_to_game_iframe(driver)
 
         bet = False
         last_payout = None
