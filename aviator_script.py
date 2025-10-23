@@ -389,11 +389,16 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
         options = webdriver.ChromeOptions()
         chrome_path = shutil.which("chromium")
         driver_path = shutil.which("chromedriver")
+        # ✅ Locate Chrome binary
+        chrome_path = shutil.which("chromium") or shutil.which("chromium-browser") or "/usr/bin/chromium"
 
-        options.binary_location = chrome_path
+        if not chrome_path:
+            raise Exception("❌ Chrome binary not found on this host")
+
+        options.binary_location = str(chrome_path)  # must be string
+
       
-
-        service = Service(driver_path) 
+ 
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-gpu")
@@ -409,7 +414,13 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
             "profile.password_manager_enabled": False
         }
         options.add_experimental_option("prefs", prefs)
+        # ✅ Locate ChromeDriver
+        driver_path = shutil.which("chromedriver") or "/usr/bin/chromedriver"
 
+        if not driver_path:
+            raise Exception("❌ ChromeDriver not found on this host")
+
+        service = Service(str(driver_path)) 
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(URL)
         wait_and_click(driver, "/html/body/div[3]/div[1]/header/div[1]/div[2]/div[1]/a[1]", "Login button")
