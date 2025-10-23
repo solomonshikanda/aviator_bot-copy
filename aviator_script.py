@@ -389,18 +389,6 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
 
         options = Options()
 
-        # ✅ Locate Chrome binary (Railway/Render-compatible)
-        chrome_path = (
-            shutil.which("chromium")
-            or shutil.which("chromium-browser")
-            or "/usr/bin/chromium"
-            or "/usr/bin/chromium-browser"
-        )
-
-        if not chrome_path:
-            raise Exception("❌ Chrome binary not found on this host")
-
-        options.binary_location = chrome_path
 
         # ✅ Stable Chrome flags for Railway
         options.add_argument("--headless=new")
@@ -420,10 +408,9 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
         options.add_experimental_option("prefs", prefs)
 
         # ✅ Create driver service
-        service = Service()  # no need to specify path — autoinstaller handles it
-        driver = webdriver.Chrome(service=service, options=options)
+        driver = webdriver.Chrome(options=options)
 
-        add_log(f"✅ Chrome started successfully at {chrome_path}")
+    
         driver.get(URL)
         wait_and_click(driver, "/html/body/div[3]/div[1]/header/div[1]/div[2]/div[1]/a[1]", "Login button")
         time.sleep(2)
