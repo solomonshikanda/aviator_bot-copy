@@ -37,7 +37,29 @@ from xgboost import XGBClassifier
 from joblib import dump, load
 
 init_db()
+# ---------------------- DASHBOARD LOGGING ----------------------
+log_messages = []
+MAX_LOGS = 100  # keep more logs for dashboard
 
+def add_log(message):
+    """Add message to in-memory logs and print to console."""
+    global log_messages
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    entry = f"[{timestamp}] {message}"
+    
+    # Always print to console
+    print(entry)
+    
+    # Define important keywords
+    important = ["login", "iframe", "bet", "win", "loss", "stopped", "error", "appended", "payout", "started", "balance"]
+    
+    # Always include important logs or cycle summaries
+    if any(k in message.lower() for k in important) or message.startswith("--- Cycle"):
+        log_messages.append(entry)
+    
+    # Trim if exceeds max length
+    if len(log_messages) > MAX_LOGS:
+        log_messages = log_messages[-MAX_LOGS:]  
 # ---------------------- CONFIG ----------------------
 URL = "https://www.betika.com"
 AVIATOR_URL = "https://www.betika.com/en-ke/aviator"
@@ -595,27 +617,5 @@ def log_payouts(new_payouts):
     else:
         add_log("ℹ️ No new payouts to append.")
 
-# ---------------------- DASHBOARD LOGGING ----------------------
-log_messages = []
-MAX_LOGS = 100  # keep more logs for dashboard
 
-def add_log(message):
-    """Add message to in-memory logs and print to console."""
-    global log_messages
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    entry = f"[{timestamp}] {message}"
-    
-    # Always print to console
-    print(entry)
-    
-    # Define important keywords
-    important = ["login", "iframe", "bet", "win", "loss", "stopped", "error", "appended", "payout", "started", "balance"]
-    
-    # Always include important logs or cycle summaries
-    if any(k in message.lower() for k in important) or message.startswith("--- Cycle"):
-        log_messages.append(entry)
-    
-    # Trim if exceeds max length
-    if len(log_messages) > MAX_LOGS:
-        log_messages = log_messages[-MAX_LOGS:]
 
