@@ -546,13 +546,20 @@ def safe_enter_text(driver, xpath, value):
 def switch_to_game_iframe(driver):
     try:
         driver.switch_to.default_content()
-        iframe = WebDriverWait(driver, 15).until(lambda d: d.find_elements(By.TAG_NAME, "iframe"))
-        if iframe:
-            driver.switch_to.frame(iframe[0])
-            print("Switched to game iframe.")
-    except Exception:
-        add_log(f"Iframe switch error:")
 
+        # Wait for the first iframe to appear
+        iframe = WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.TAG_NAME, "iframe"))
+        )
+
+        driver.switch_to.frame(iframe)
+        add_log("✅ Switched to game iframe successfully.")
+        return True
+
+    except Exception as e:
+        add_log(f"❌ Iframe switch error: {str(e)}")
+        return False
+    
 def get_recent_payouts(driver):
     try:
         wait_and_click(driver, "/html/body/app-root/app-game/div/div/div[2]/div/div[2]/div[2]/app-stats-widget/div/div[2]/div/div", "Dropdown toggle")
