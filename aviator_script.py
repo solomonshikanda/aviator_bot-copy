@@ -384,6 +384,23 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+def get_recent_payouts(driver):
+    try:
+        wait_and_click(driver, "/html/body/app-root/app-game/div/div/div[2]/div/div[2]/div[2]/app-stats-widget/div/div[2]/div/div", "Dropdown toggle")
+        time.sleep(2)
+        container = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/app-root/app-game/div/div/div[2]/div/div[2]/div[2]/app-stats-widget/div/app-stats-dropdown/div/div[2]")))
+        text = driver.execute_script("return arguments[0].innerText;", container)
+        parts = text.replace("\n", " ").split()
+        values = []
+        for p in parts:
+            try:
+                values.append(float(p.replace("x", "").replace(",", "")))
+            except ValueError:
+                continue
+        return values
+    except Exception as e:
+        add_log(f"Payout read failed:")
+        return [] 
 # ---------------------- CORE BOT LOGIC ----------------------
 def run_bot(bet_amount, phone, password, check_interval, check_duration):
     global bot_running
