@@ -369,11 +369,31 @@ def is_bet_active(driver):
         return bool(driver.find_elements(By.XPATH, "//button/span/label[contains(text(),'Cancel')]"))
     except:
         return False
+
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+import shutil
+
+chrome_path = shutil.which("chromium")
+driver_path = shutil.which("chromedriver")
+
+
+
+
+service = Service(driver_path)
+
 # ---------------------- CORE BOT LOGIC ----------------------
 def run_bot(bet_amount, phone, password, check_interval, check_duration):
     global bot_running
     try:
         options = webdriver.ChromeOptions()
+        chrome_path = shutil.which("chromium")
+        driver_path = shutil.which("chromedriver")
+
+        options.binary_location = chrome_path
+      
+
+        service = Service(driver_path) 
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-gpu")
@@ -390,7 +410,7 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
         }
         options.add_experimental_option("prefs", prefs)
 
-        driver = webdriver.Chrome(options=options)
+        driver = webdriver.Chrome(service=service, options=options)
         driver.get(URL)
         wait_and_click(driver, "/html/body/div[3]/div[1]/header/div[1]/div[2]/div[1]/a[1]", "Login button")
         time.sleep(2)
