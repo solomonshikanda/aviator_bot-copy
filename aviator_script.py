@@ -370,58 +370,60 @@ def is_bet_active(driver):
     except:
         return False
 
+from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-import shutil
-
-chrome_path = shutil.which("chromium")
-driver_path = shutil.which("chromedriver")
-
-
-
-
-service = Service(driver_path)
+import chromedriver_autoinstaller
+import shutil, time
+from datetime import datetime
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 # ---------------------- CORE BOT LOGIC ----------------------
 def run_bot(bet_amount, phone, password, check_interval, check_duration):
     global bot_running
     try:
-        options = webdriver.ChromeOptions()
-        chrome_path = shutil.which("chromium")
-        driver_path = shutil.which("chromedriver")
-        # ✅ Locate Chrome binary
-        chrome_path = shutil.which("chromium") or shutil.which("chromium-browser") or "/usr/bin/chromium"
+        # ✅ Automatically install a matching ChromeDriver
+        chromedriver_autoinstaller.install()
+
+        options = Options()
+
+        # ✅ Locate Chrome binary (Railway/Render-compatible)
+        chrome_path = (
+            shutil.which("chromium")
+            or shutil.which("chromium-browser")
+            or "/usr/bin/chromium"
+            or "/usr/bin/chromium-browser"
+        )
 
         if not chrome_path:
             raise Exception("❌ Chrome binary not found on this host")
 
-        options.binary_location = str(chrome_path)  # must be string
+        options.binary_location = chrome_path
 
-      
- 
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        # ✅ Stable Chrome flags for Railway
+        options.add_argument("--headless=new")
         options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
-        options.add_argument("--start-maximized")
-        options.add_argument("--headless") 
-        options.add_argument("--disable-infobars")
-        options.add_argument("--enable-unsafe-swiftshader")
+        options.add_argument("--window-size=1920,1080")
         options.add_argument("--disable-extensions")
         options.add_argument("--disable-software-rasterizer")
+        options.add_argument("--disable-infobars")
         options.add_argument("--disable-blink-features=AutomationControlled")
+
         prefs = {
             "credentials_enable_service": False,
             "profile.password_manager_enabled": False
         }
         options.add_experimental_option("prefs", prefs)
-        # ✅ Locate ChromeDriver
-        driver_path = shutil.which("chromedriver") or "/usr/bin/chromedriver"
 
-        if not driver_path:
-            raise Exception("❌ ChromeDriver not found on this host")
-
-        service = Service(str(driver_path)) 
+        # ✅ Create driver service
+        service = Service()  # no need to specify path — autoinstaller handles it
         driver = webdriver.Chrome(service=service, options=options)
+
+        add_log(f"✅ Chrome started successfully at {chrome_path}")
         driver.get(URL)
         wait_and_click(driver, "/html/body/div[3]/div[1]/header/div[1]/div[2]/div[1]/a[1]", "Login button")
         time.sleep(2)
