@@ -1,34 +1,34 @@
-import threading
-import time
-import random
-import csv
 import os
+import time
+import csv
 import pickle
+import random
+import threading
+import numpy as np
+import pandas as pd
 from datetime import datetime
+
+# ---------------------- SELENIUM ----------------------
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+
+# ---------------------- DATABASE ----------------------
 from database import log_bet_result, set_running, is_running, init_db
+
+# ---------------------- ML & ANALYTICS ----------------------
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import class_weight
 from sklearn.metrics import classification_report
-import os
-import time
-import threading
-import numpy as np
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from sklearn.utils import class_weight
-from sklearn.metrics import classification_report
-from sklearn.preprocessing import StandardScaler
-from sklearn.utils import class_weight
-from sklearn.metrics import classification_report
+from sklearn.model_selection import TimeSeriesSplit, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.calibration import CalibratedClassifierCV
 from xgboost import XGBClassifier
 from joblib import dump, load
+
 
 init_db()
 # ---------------------- DASHBOARD LOGGING ----------------------
