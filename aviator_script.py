@@ -385,30 +385,31 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
     global bot_running
     try:
         # ✅ Automatically install a matching ChromeDriver
-        chromedriver_autoinstaller.install()
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.set_capability('browserless:token', "dvoXMLvEK9ZEM3MzuauTHB9TSXJr3zk7l7pZTRNAmbKSksqx")
+        # Set args similar to puppeteer's for best performance
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--disable-background-timer-throttling")
+        chrome_options.add_argument("--disable-backgrounding-occluded-windows")
+        chrome_options.add_argument("--disable-breakpad")
+        chrome_options.add_argument("--disable-component-extensions-with-background-pages")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-features=TranslateUI,BlinkGenPropertyTrees")
+        chrome_options.add_argument("--disable-ipc-flooding-protection")
+        chrome_options.add_argument("--disable-renderer-backgrounding")
+        chrome_options.add_argument("--enable-features=NetworkService,NetworkServiceInProcess")
+        chrome_options.add_argument("--force-color-profile=srgb")
+        chrome_options.add_argument("--hide-scrollbars")
+        chrome_options.add_argument("--metrics-recording-only")
+        chrome_options.add_argument("--mute-audio")
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
 
-        options = Options()
-
-
-        # ✅ Stable Chrome flags for Railway
-        options.add_argument("--headless=new")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--disable-software-rasterizer")
-        options.add_argument("--disable-infobars")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-
-        prefs = {
-            "credentials_enable_service": False,
-            "profile.password_manager_enabled": False
-        }
-        options.add_experimental_option("prefs", prefs)
-
-        # ✅ Create driver service
-        driver = webdriver.Chrome(options=options)
+        driver = webdriver.Remote(
+            command_executor="https://browserless-production-0276.up.railway.app/webdriver",
+            options=chrome_options
+        )
 
     
         driver.get(URL)
