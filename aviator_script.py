@@ -409,7 +409,7 @@ from selenium.common.exceptions import UnexpectedAlertPresentException
 def switch_to_game_iframe(driver):
     try:
         driver.switch_to.default_content()
-        iframe = WebDriverWait(driver, 15).until(lambda d: d.find_elements(By.TAG_NAME, "iframe"))
+        iframe = WebDriverWait(driver, 30).until(lambda d: d.find_elements(By.TAG_NAME, "iframe"))
         if iframe:
             driver.switch_to.frame(iframe[0])
             print("Switched to game iframe.")
