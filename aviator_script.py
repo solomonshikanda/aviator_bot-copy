@@ -28,6 +28,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.calibration import CalibratedClassifierCV
 from xgboost import XGBClassifier
 from joblib import dump, load
+from selenium.common.exceptions import NoAlertPresentException, TimeoutException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 init_db()
@@ -403,8 +407,23 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
         chrome_options.add_argument("--hide-scrollbars")
         chrome_options.add_argument("--metrics-recording-only")
         chrome_options.add_argument("--mute-audio")
-        chrome_options.add_argument("--headless")
+       
         chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+       
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--start-maximized")
+        chrome_options.add_argument("--headless") 
+        chrome_options.add_argument("--disable-infobars")
+        chrome_options.add_argument("--enable-unsafe-swiftshader")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-software-rasterizer")
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        prefs = {
+            "credentials_enable_service": False,
+            "profile.password_manager_enabled": False
+        }
+        chrome_options.add_experimental_option("prefs", prefs)
 
         driver = webdriver.Remote(
             command_executor="https://browserless-production-0276.up.railway.app/webdriver",
@@ -543,15 +562,29 @@ def safe_enter_text(driver, xpath, value):
         print(f"Error entering text: ")
 
 
+
+
+
 def switch_to_game_iframe(driver):
     try:
         driver.switch_to.default_content()
 
-        # Wait for the first iframe to appear
+        # Handle unexpected alert if it exists
+        try:
+            WebDriverWait(driver, 3).until(EC.alert_is_present())
+            alert = driver.switch_to.alert
+            alert_text = alert.text
+            alert.dismiss()  # or alert.accept() depending on your game
+            add_log(f"⚠️ Unexpected alert dismissed: {alert_text}")
+        except TimeoutException:
+            pass  # no alert appeared
+        except NoAlertPresentException:
+            pass
+
+        # Wait for the iframe to appear and switch
         iframe = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located((By.TAG_NAME, "iframe"))
         )
-
         driver.switch_to.frame(iframe)
         add_log("✅ Switched to game iframe successfully.")
         return True
@@ -559,20 +592,6 @@ def switch_to_game_iframe(driver):
     except Exception as e:
         add_log(f"❌ Iframe switch error: {str(e)}")
         return False
-    
-def get_recent_payouts(driver):
-    try:
-        wait_and_click(driver, "/html/body/app-root/app-game/div/div/div[2]/div/div[2]/div[2]/app-stats-widget/div/div[2]/div/div", "Dropdown toggle")
-        time.sleep(2)
-        container = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/app-root/app-game/div/div/div[2]/div/div[2]/div[2]/app-stats-widget/div/app-stats-dropdown/div/div[2]")))
-        text = driver.execute_script("return arguments[0].innerText;", container)
-        parts = text.replace("\n", " ").split()
-        values = [float(p.replace("x", "").replace(",", "")) for p in parts if "x" in p]
-        return values
-    except Exception:
-        add_log(f"Payout read failed:")
-        return []
-    
 
 
 # ---------------------- LSTM-ENHANCED should_bet ----------------------
