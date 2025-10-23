@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aviator Bot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #f0f6fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 { color: #58a6ff; margin-top: 30px; }
+        .container {
+            width: 90%;
+            max-width: 700px;
+            margin: 40px auto;
+            background: #161b22;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(88, 166, 255, 0.2);
+        }
+        label { display: block; text-align: left; margin: 10px 0 5px; color: #c9d1d9; }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #21262d;
+            color: #f0f6fc;
+            margin-bottom: 15px;
+        }
+        button {
+            width: 48%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: 0.3s;
+        }
+        #startBtn { background-color: #238636; }
+        #stopBtn { background-color: #da3633; }
+        #refreshBtn { background-color: #1f6feb; margin-top: 15px; width: 100%; }
+        button:hover { opacity: 0.85; }
+        .status { margin-top: 20px; font-size: 18px; }
+        table {
+            width: 100%; border-collapse: collapse; margin-top: 25px;
+            background-color: #161b22; color: #f0f6fc;
+        }
+        th, td { border: 1px solid #30363d; padding: 8px; text-align: center; }
+        th { background-color: #21262d; color: #58a6ff; }
+        #logContainer {
+            background:#0d1117; 
+            color:#00ff99; 
+            text-align:left;
+            padding:10px; 
+            height:300px; 
+            overflow-y:auto;
+            border:1px solid #30363d; 
+            border-radius:8px;
+            font-family:monospace;
+            font-size: 14px;
+        }
+        .log-line { margin-bottom: 4px; }
+        .log-win { color: #00ff99; }
+        .log-loss { color: #ff5555; }
+        .log-info { color: #58a6ff; }
+        .log-error { color: #ffcc00; }
+    </style>
+</head>
+<body>
+    <h1>Aviator Bot Panel</h1>
+    <div class="container">
+        <form id="botForm">
+            <label>Bet Multiplier:</label>
+            <input type="number" step="0.01" id="bet_amount" placeholder="Bet Multiplier eg 1.2" required>
+            <label>Phone Number:</label>
+            <input type="text" id="phone" placeholder="Enter Betika phone number - eg 0712345678" required>
+            <label>Password:</label>
+            <input type="password" id="password" placeholder="Enter Betika password" required>
+            <label>Check Interval (sec):</label>
+            <input type="number" id="check_interval" value="5" required>
+            <label>Check Duration (rounds):</label>
+            <input type="number" id="check_duration" value="10" required>
+
+            <div style="display: flex; justify-content: space-between;">
+                <button type="button" id="startBtn">Start Bot</button>
+                <button type="button" id="stopBtn">Stop Bot</button>
+            </div>
+        </form>
+
+        <div class="status" id="status">Bot Status: Unknown</div>
+
+        <button id="refreshBtn">View Payout History</button>
+
+        <table id="payoutTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Payout Multiplier</th>
+                    <th>bet Multiplier</th>
+                </tr>
+            </thead>
+            <tbody id="payoutBody"></tbody>
+        </table>
+    </div>
+
+    <h2>Live Bot Logs</h2>
+    <div id="logContainer"></div>
+
+    <script>
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const refreshBtn = document.getElementById("refreshBtn");
+        const statusText = document.getElementById("status");
+        const payoutTable = document.getElementById("payoutTable");
+        const payoutBody = document.getElementById("payoutBody");
+        const logContainer = document.getElementById("logContainer");
+
+        async function updateStatus() {
+            try {
+                const res = await fetch("/status");
+                const data = await res.json();
+                statusText.textContent = "Bot Status: " + (data.running ? "Running 🟢" : "Stopped 🔴");
+            } catch {
+                statusText.textContent = "Bot Status: Connection Error ⚠️";
+            }
+        }
+
+        async function updateLogs() {
+            try {
+                const res = await fetch("/logs");
+                const logs = await res.json();
+            const logContainer = document.getElementById("logContainer");
+            logContainer.innerHTML = logs.map(l => `<div>${l}</div>`).join("");
+                logContainer.scrollTop = logContainer.scrollHeight;
+            } catch (e) {
+                console.error("Error fetching logs:", e);
+            }
+        }
+
+        async function updateHistory() {
+            try {
+                const res = await fetch("/history");
+                const data = await res.json();
+                payoutTable.style.display = "table";
+                payoutBody.innerHTML = data.map(row => `
+                    <tr>
+                        <td>${row.timestamp}</td>
+                        <td>${row.payout}</td>
+                        <td>${row.round}</td>
+                    </tr>
+                `).join("");
+            } catch (e) {
+                console.error("Error loading history:", e);
+            }
+        }
+
+        startBtn.addEventListener("click", async () => {
+            const bet_amount = parseFloat(document.getElementById("bet_amount").value);
+            const phone = document.getElementById("phone").value;
+            const password = document.getElementById("password").value;
+            const check_interval = parseInt(document.getElementById("check_interval").value);
+            const check_duration = parseInt(document.getElementById("check_duration").value);
+
+            const res = await fetch("/start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ bet_amount, phone, password, check_interval, check_duration })
+            });
+            const data = await res.json();
+            alert(data.status);
+            updateStatus();
+        });
+
+        stopBtn.addEventListener("click", async () => {
+            const res = await fetch("/stop", { method: "POST" });
+            const data = await res.json();
+            alert(data.status);
+            updateStatus();
+        });
+
+        refreshBtn.addEventListener("click", updateHistory);
+
+        // Auto-refresh logs and history
+        setInterval(updateLogs, 3000);
+        setInterval(updateHistory, 5000);
+        setInterval(updateStatus, 1000);
+
+        updateStatus();
+        updateLogs();
+        updateHistory();
+    </script>
+</body>
+</html>
