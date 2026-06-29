@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: flask-selenium-ml-app
+    name: aviator_bot-copy
     env: python
     plan: free
     buildCommand: |
