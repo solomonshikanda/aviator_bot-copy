@@ -461,18 +461,18 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
         #    options=chrome_options
         #)
         
-        options.add_argument("--headless=new")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
 
         chrome_bin = os.getenv("CHROME_BIN", "/usr/bin/chromium")
         chromedriver = os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")
 
-        options.binary_location = chrome_bin
+        chrome_options.binary_location = chrome_bin
 
         driver = webdriver.Chrome(
         service=Service(chromedriver),
-        options=options
+        options=chrome_options
         )
 
     
