@@ -422,7 +422,7 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
     try:
         # ✅ Automatically install a matching ChromeDriver
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.set_capability('browserless:token', "dvoXMLvEK9ZEM3MzuauTHB9TSXJr3zk7l7pZTRNAmbKSksqx")
+        #chrome_options.set_capability('browserless:token', "dvoXMLvEK9ZEM3MzuauTHB9TSXJr3zk7l7pZTRNAmbKSksqx")
         # Set args similar to puppeteer's for best performance
         chrome_options.add_argument("--window-size=1920,1080")
         chrome_options.add_argument("--disable-background-timer-throttling")
@@ -456,9 +456,23 @@ def run_bot(bet_amount, phone, password, check_interval, check_duration):
         }
         chrome_options.add_experimental_option("prefs", prefs)
 
-        driver = webdriver.Remote(
-            command_executor="https://browserless-production-0276.up.railway.app/webdriver",
-            options=chrome_options
+        #driver = webdriver.Remote(
+        # #   command_executor="https://browserless-production-0276.up.railway.app/webdriver",
+        #    options=chrome_options
+        #)
+        
+        options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+
+        chrome_bin = os.getenv("CHROME_BIN", "/usr/bin/chromium")
+        chromedriver = os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")
+
+        options.binary_location = chrome_bin
+
+        driver = webdriver.Chrome(
+        service=Service(chromedriver),
+        options=options
         )
 
     
