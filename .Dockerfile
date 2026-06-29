@@ -9,9 +9,12 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
-CMD ["gunicorn", "app:app"]
+EXPOSE 10000
+
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
