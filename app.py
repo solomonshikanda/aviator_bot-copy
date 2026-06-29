@@ -1,20 +1,22 @@
+import csv
+import os
 from flask import Flask, render_template, request, jsonify
 from aviator_script import start_bot, stop_bot, is_running, log_messages
-import csv, os
 from database import init_db
 
-
+# Initialize database
 init_db()
+
 app = Flask(__name__)
 
 @app.route('/')
 def dashboard():
-
+    # Flask looks inside the 'templates' folder automatically!
     return render_template("dashboard.html")
 
 @app.route('/start', methods=['POST'])
 def start():
-    data = request.get_json()
+    data = request.get_json() or {}
     bet_amount = float(data.get("bet_amount", 1.2))
     phone = data.get("phone")
     password = data.get("password")
@@ -40,22 +42,27 @@ def history():
         return jsonify([])
 
     data = []
-    with open(path, newline="") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            if len(row) >= 3:
-                data.append({
-                    "round": row[0],
-                    "payout": row[1],
-                    "timestamp": row[2] if len(row) > 2 else ""
-                })
-    return jsonify(data[-20:])  # last 20
+    try:
+        with open(path, newline="") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) >= 3:
+                    data.append({
+                        "round": row[0],
+                        "payout": row[1],
+                        "timestamp": row[2]
+                    })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
+    return jsonify(data[-20:])  # Last 20 rows
 
 @app.route("/logs")
 def get_logs():
     """Return the latest runtime logs."""
-    return jsonify(log_messages[-10:])  # last 50 logs
+    return jsonify(log_messages[-10:])  # Last 10 logs
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
-    
+    # Local fallback execution
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="0.0.0.0", port=port, debug=False)
