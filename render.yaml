@@ -1,20 +1,5 @@
 services:
   - type: web
     name: aviator_bot-copy
-    env: python
+    env: docker
     plan: free
-    buildCommand: |
-      apt-get update && \
-      apt-get install -y chromium-browser chromium-chromedriver && \
-      pip install --upgrade pip && \
-      pip install -r requirements.txt
-    startCommand: gunicorn app:app
-    envVars:
-      - key: PYTHONUNBUFFERED
-        value: "1"
-      - key: CHROME_BIN
-        value: "/usr/bin/chromium-browser"
-      - key: CHROMEDRIVER_PATH
-        value: "/usr/bin/chromedriver"
-      - key: PORT
-        value: "8080"
